@@ -137,8 +137,9 @@ st.markdown("""
     animation: calPulse .5s ease-out;
   }
 
-  /* ── Botones del calendario estilizados como cards ── */
-  div[data-testid="stColumn"] div[data-testid="stButton"] button {
+  /* ── Botones del calendario estilizados como cards (sólo área principal) ── */
+  section.main div[data-testid="stColumn"] div[data-testid="stButton"] button,
+  div[data-testid="block-container"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
     background-color: #161b22 !important;
     border: 1px solid #30363d !important;
     border-radius: 8px !important;
@@ -152,7 +153,8 @@ st.markdown("""
     transition: border-color .15s !important;
     color: #8b949e !important;
   }
-  div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
+  section.main div[data-testid="stColumn"] div[data-testid="stButton"] button:hover,
+  div[data-testid="block-container"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
     border-color: #58a6ff !important;
     background-color: #1c2128 !important;
   }
@@ -574,55 +576,56 @@ def main():
         if "tiers_state" not in st.session_state:
             st.session_state["tiers_state"] = {t: (t in ["S", "A", "B"]) for t in ALL_TIERS}
 
-        # CSS toggle chips — réplica exacta de la imagen de referencia
+        # CSS toggle chips — azul activo / gris inactivo
         st.markdown("""<style>
-        /* ── Base compartido ── */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button {
+        /* ── Base compartido — cubre stHorizontalBlock (Streamlit ≤1.30) y stColumn (≥1.31) ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button,
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
             border-radius: 14px !important;
             font-size: 15px !important;
             font-weight: 800 !important;
-            height: 48px !important;
+            height: 52px !important;
             min-height: 0 !important;
             letter-spacing: .5px !important;
             transition: transform .12s, box-shadow .12s !important;
             padding: 0 10px !important;
         }
         /* ── Chip INACTIVO — gris claro ── */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button[data-testid="baseButton-secondary"] {
-            background: #d1d5db !important;
-            color: #374151 !important;
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[kind="secondary"],
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[data-testid="baseButton-secondary"],
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[kind="secondary"],
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
+            background: #9ca3af !important;
+            color: #1f2937 !important;
             border: none !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,.15) !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,.20) !important;
         }
-        /* ── Chip ACTIVO — azul con sombra ── */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button[data-testid="baseButton-primary"] {
-            background: linear-gradient(135deg,#5aabf5 0%,#3b82f6 100%) !important;
+        /* ── Chip ACTIVO — azul degradado ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[kind="primary"],
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"],
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[kind="primary"],
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
+            background: linear-gradient(135deg, #60b4ff 0%, #2563eb 100%) !important;
             color: #ffffff !important;
             border: none !important;
-            box-shadow: 0 3px 8px rgba(59,130,246,.45) !important;
+            box-shadow: 0 3px 10px rgba(37,99,235,.55) !important;
         }
-        /* ── Hover / press ── */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button:hover {
-            transform: translateY(-2px) scale(1.04) !important;
-            box-shadow: 0 5px 12px rgba(0,0,0,.2) !important;
+        /* ── Hover ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:hover,
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
+            transform: translateY(-2px) scale(1.05) !important;
+            box-shadow: 0 6px 14px rgba(0,0,0,.25) !important;
         }
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button:active {
-            transform: translateY(0) scale(.96) !important;
+        /* ── Active press ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:active,
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:active {
+            transform: translateY(0) scale(.95) !important;
         }
-        /* Quitar outline de focus */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button:focus { outline: none !important; box-shadow: inherit !important; }
+        /* ── Sin outline de focus ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:focus,
+        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:focus {
+            outline: none !important;
+        }
         </style>""", unsafe_allow_html=True)
 
         cols_t = st.columns(len(ALL_TIERS))
