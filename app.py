@@ -451,8 +451,10 @@ def render_calendar(agg: pd.DataFrame, year: int, month: int):
             color  = "#8b949e"
             border = "1px solid #30363d"
 
+        # :has(>div>span#ID) limita al stVerticalBlock directo del día,
+        # evitando que haga match con la columna exterior que contiene todo el calendario
         css_rules.append(
-            f"div[data-testid='stColumn']:has(#cal-{key}) button{{"
+            f"div[data-testid='stVerticalBlock']:has(>div>span#cal-{key}) button{{"
             f"color:{color}!important;border:{border}!important;}}"
         )
 
