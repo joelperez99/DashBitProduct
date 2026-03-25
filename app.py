@@ -451,10 +451,12 @@ def render_calendar(agg: pd.DataFrame, year: int, month: int):
             color  = "#8b949e"
             border = "1px solid #30363d"
 
-        # :has(>div>span#ID) limita al stVerticalBlock directo del día,
-        # evitando que haga match con la columna exterior que contiene todo el calendario
+        # Busca el div que tiene el span como HIJO DIRECTO (>),
+        # luego apunta al botón en el div hermano siguiente (~).
+        # Esto es exactamente el element-container del span → siguiente element-container con el botón.
+        # No sube a contenedores padre, evitando colorear toda la columna exterior.
         css_rules.append(
-            f"div[data-testid='stVerticalBlock']:has(>div>span#cal-{key}) button{{"
+            f"div:has(>span#cal-{key})~div button{{"
             f"color:{color}!important;border:{border}!important;}}"
         )
 
