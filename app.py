@@ -324,24 +324,60 @@ def show_day_detail(df: pd.DataFrame, selected_day: date, tiers: list):
         </div>""", unsafe_allow_html=True)
 
     # ── Bank curve chart ──────────────────────────────────────────────────
+    # Color: verde si ganó el día, rojo si perdió
+    line_color = "#2e7d32" if banco_final >= banco_inicial else "#c62828"
+    fill_color  = "rgba(46,125,50,0.12)" if banco_final >= banco_inicial else "rgba(198,40,40,0.12)"
+
     x_labels = ["Inicio"] + [f"#{i+1}" for i in range(len(pnl_seq))]
+
     fig = go.Figure()
+
+    # Línea base invisible (banco_inicial) para rellenar entre curva y baseline
     fig.add_trace(go.Scatter(
-        x=x_labels, y=bank_curve,
-        mode="lines+markers",
-        line=dict(color="#2e7d32", width=2),
-        marker=dict(color="#2e7d32", size=6),
-        fill="tozeroy",
-        fillcolor="rgba(46,125,50,0.08)",
+        x=x_labels,
+        y=[banco_inicial] * len(x_labels),
+        mode="lines",
+        line=dict(width=0, color=line_color),
+        showlegend=False,
+        hoverinfo="skip",
     ))
+    # Curva del banco
+    fig.add_trace(go.Scatter(
+        x=x_labels,
+        y=bank_curve,
+        mode="lines+markers",
+        line=dict(color=line_color, width=2),
+        marker=dict(color=line_color, size=5),
+        fill="tonexty",          # rellena entre curva y la línea base
+        fillcolor=fill_color,
+        hovertemplate="Resultado %{x}<br>Banco: $%{y:,.0f}<extra></extra>",
+    ))
+
+    # Rango Y con 5% de margen
+    y_min = min(bank_curve) * 0.97
+    y_max = max(bank_curve) * 1.02
+
     fig.update_layout(
         paper_bgcolor="#f8f5f0",
         plot_bgcolor="#f8f5f0",
-        font=dict(color="#1a1a1a"),
-        margin=dict(l=40, r=20, t=20, b=40),
-        height=260,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(tickformat="$,.0f", showgrid=True, gridcolor="#e0e0e0"),
+        font=dict(color="#1a1a1a", size=11),
+        margin=dict(l=10, r=10, t=10, b=40),
+        height=280,
+        xaxis=dict(
+            showgrid=False,
+            tickangle=0,
+            tickfont=dict(size=10),
+            # Mostrar ticks cada ~13 operaciones para no saturar
+            tickmode="array",
+            tickvals=[x_labels[0]] + [x_labels[i] for i in range(12, len(x_labels), 13)],
+        ),
+        yaxis=dict(
+            tickformat="$,.0f",
+            showgrid=True,
+            gridcolor="#e0e0e0",
+            range=[y_min, y_max],
+        ),
+        hovermode="x unified",
     )
     st.plotly_chart(fig, use_container_width=True)
 
