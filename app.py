@@ -571,59 +571,70 @@ def main():
         # ── Tier pills ────────────────────────────────────────────────────
         st.markdown("**Tiers activos**")
 
-        # Inicializar estado
         if "tiers_state" not in st.session_state:
             st.session_state["tiers_state"] = {t: (t in ["S", "A", "B"]) for t in ALL_TIERS}
 
-        # CSS confiable: apunta a botones primary/secondary dentro
-        # de st.columns() en la sidebar (stHorizontalBlock)
-        st.markdown("""
-        <style>
-        /* Pill activo (type=primary) en la sidebar */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button[data-testid="baseButton-primary"] {
-            border-radius: 20px !important;
-            font-weight: 700 !important;
-            height: 34px !important;
-            min-height: 0 !important;
-            font-size: 13px !important;
-            background: #58a6ff !important;
-            color: #0d1117 !important;
-            border: none !important;
-            transition: opacity .15s, transform .1s !important;
-        }
-        /* Pill inactivo (type=secondary) en la sidebar */
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button[data-testid="baseButton-secondary"] {
-            border-radius: 20px !important;
-            font-weight: 600 !important;
-            height: 34px !important;
-            min-height: 0 !important;
-            font-size: 13px !important;
-            background: #21262d !important;
-            color: #8b949e !important;
-            border: 1px solid #30363d !important;
-            transition: opacity .15s, transform .1s !important;
-        }
-        section[data-testid="stSidebar"]
-          div[data-testid="stHorizontalBlock"]
-          button:hover {
-            opacity: .8 !important;
-            transform: scale(1.04) !important;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        tier_colors = {"S": "#e3b341", "A": "#58a6ff", "B": "#3fb950",
+                       "C": "#bc8cff", "D": "#f85149"}
 
-        # Render pill buttons en fila
+        st.markdown("""<style>
+        .tier-pills-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+        .tier-pill-active {
+            display:inline-flex; align-items:center; gap:5px;
+            padding:3px 10px 3px 12px; border-radius:20px;
+            font-size:13px; font-weight:700; cursor:default;
+            border: 1.5px solid; line-height:1.4;
+        }
+        .tier-pill-inactive {
+            display:inline-flex; align-items:center;
+            padding:3px 12px; border-radius:20px;
+            font-size:13px; font-weight:600; cursor:default;
+            opacity:.45; border:1.5px dashed;
+        }
+        .tier-x {
+            font-size:14px; line-height:1; cursor:pointer;
+            opacity:.7; margin-left:1px;
+        }
+        .tier-x:hover { opacity:1; }
+        </style>""", unsafe_allow_html=True)
+
+        # Renderizar pills como HTML puro
+        pills_html = "<div class='tier-pills-wrap'>"
+        for t in ALL_TIERS:
+            color = tier_colors[t]
+            if st.session_state["tiers_state"][t]:
+                pills_html += (
+                    f"<span class='tier-pill-active' "
+                    f"style='background:{color}22;color:{color};border-color:{color}'>"
+                    f"{t}</span>"
+                )
+            else:
+                pills_html += (
+                    f"<span class='tier-pill-inactive' "
+                    f"style='color:{color};border-color:{color}'>"
+                    f"{t}</span>"
+                )
+        pills_html += "</div>"
+        st.markdown(pills_html, unsafe_allow_html=True)
+
+        # Botones invisibles uno por tier para manejar el toggle
+        st.markdown("""<style>
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button {
+            height:22px!important; min-height:0!important;
+            padding:0!important; font-size:10px!important;
+            border-radius:4px!important;
+        }
+        </style>""", unsafe_allow_html=True)
+
         cols_t = st.columns(len(ALL_TIERS))
         for i, t in enumerate(ALL_TIERS):
             active = st.session_state["tiers_state"][t]
+            color  = tier_colors[t]
+            label  = f"✕ {t}" if active else f"+ {t}"
             with cols_t[i]:
-                if st.button(t, key=f"tier_btn_{t}",
-                             type="primary" if active else "secondary",
-                             use_container_width=True):
+                if st.button(label, key=f"tier_btn_{t}", use_container_width=True):
                     st.session_state["tiers_state"][t] = not active
                     st.rerun()
 
