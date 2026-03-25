@@ -574,52 +574,62 @@ def main():
         if "tiers_state" not in st.session_state:
             st.session_state["tiers_state"] = {t: (t in ["S", "A", "B"]) for t in ALL_TIERS}
 
-        # CSS toggle chips — activo=azul+check, inactivo=gris
+        # CSS toggle chips — réplica exacta de la imagen de referencia
         st.markdown("""<style>
-        /* Chip inactivo */
+        /* ── Base compartido ── */
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button {
+            border-radius: 14px !important;
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            height: 48px !important;
+            min-height: 0 !important;
+            letter-spacing: .5px !important;
+            transition: transform .12s, box-shadow .12s !important;
+            padding: 0 10px !important;
+        }
+        /* ── Chip INACTIVO — gris claro ── */
         section[data-testid="stSidebar"]
           div[data-testid="stHorizontalBlock"]
           button[data-testid="baseButton-secondary"] {
-            background: #e2e8f0 !important;
-            color: #4a5568 !important;
+            background: #d1d5db !important;
+            color: #374151 !important;
             border: none !important;
-            border-radius: 999px !important;
-            font-weight: 700 !important;
-            font-size: 13px !important;
-            height: 36px !important;
-            min-height: 0 !important;
-            padding: 0 6px !important;
-            transition: background .15s, transform .1s !important;
-            box-shadow: none !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,.15) !important;
         }
-        /* Chip activo */
+        /* ── Chip ACTIVO — azul con sombra ── */
         section[data-testid="stSidebar"]
           div[data-testid="stHorizontalBlock"]
           button[data-testid="baseButton-primary"] {
-            background: #4299e1 !important;
+            background: linear-gradient(135deg,#5aabf5 0%,#3b82f6 100%) !important;
             color: #ffffff !important;
             border: none !important;
-            border-radius: 999px !important;
-            font-weight: 700 !important;
-            font-size: 13px !important;
-            height: 36px !important;
-            min-height: 0 !important;
-            padding: 0 6px !important;
-            transition: background .15s, transform .1s !important;
-            box-shadow: 0 1px 4px rgba(66,153,225,.35) !important;
+            box-shadow: 0 3px 8px rgba(59,130,246,.45) !important;
+        }
+        /* ── Hover / press ── */
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button:hover {
+            transform: translateY(-2px) scale(1.04) !important;
+            box-shadow: 0 5px 12px rgba(0,0,0,.2) !important;
         }
         section[data-testid="stSidebar"]
           div[data-testid="stHorizontalBlock"]
-          button:hover { transform: scale(1.06) !important; }
+          button:active {
+            transform: translateY(0) scale(.96) !important;
+        }
+        /* Quitar outline de focus */
         section[data-testid="stSidebar"]
           div[data-testid="stHorizontalBlock"]
-          button:active { transform: scale(.97) !important; }
+          button:focus { outline: none !important; box-shadow: inherit !important; }
         </style>""", unsafe_allow_html=True)
 
         cols_t = st.columns(len(ALL_TIERS))
         for i, t in enumerate(ALL_TIERS):
             active = st.session_state["tiers_state"][t]
-            label  = f"{t} ✔" if active else t
+            # Checkmark circular para activos (igual que la imagen)
+            label  = f"{t}  ✅" if active else t
             with cols_t[i]:
                 if st.button(label, key=f"tier_btn_{t}",
                              type="primary" if active else "secondary",
