@@ -574,67 +574,56 @@ def main():
         if "tiers_state" not in st.session_state:
             st.session_state["tiers_state"] = {t: (t in ["S", "A", "B"]) for t in ALL_TIERS}
 
-        tier_colors = {"S": "#e3b341", "A": "#58a6ff", "B": "#3fb950",
-                       "C": "#bc8cff", "D": "#f85149"}
-
+        # CSS toggle chips — activo=azul+check, inactivo=gris
         st.markdown("""<style>
-        .tier-pills-wrap { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
-        .tier-pill-active {
-            display:inline-flex; align-items:center; gap:5px;
-            padding:3px 10px 3px 12px; border-radius:20px;
-            font-size:13px; font-weight:700; cursor:default;
-            border: 1.5px solid; line-height:1.4;
-        }
-        .tier-pill-inactive {
-            display:inline-flex; align-items:center;
-            padding:3px 12px; border-radius:20px;
-            font-size:13px; font-weight:600; cursor:default;
-            opacity:.45; border:1.5px dashed;
-        }
-        .tier-x {
-            font-size:14px; line-height:1; cursor:pointer;
-            opacity:.7; margin-left:1px;
-        }
-        .tier-x:hover { opacity:1; }
-        </style>""", unsafe_allow_html=True)
-
-        # Renderizar pills como HTML puro
-        pills_html = "<div class='tier-pills-wrap'>"
-        for t in ALL_TIERS:
-            color = tier_colors[t]
-            if st.session_state["tiers_state"][t]:
-                pills_html += (
-                    f"<span class='tier-pill-active' "
-                    f"style='background:{color}22;color:{color};border-color:{color}'>"
-                    f"{t}</span>"
-                )
-            else:
-                pills_html += (
-                    f"<span class='tier-pill-inactive' "
-                    f"style='color:{color};border-color:{color}'>"
-                    f"{t}</span>"
-                )
-        pills_html += "</div>"
-        st.markdown(pills_html, unsafe_allow_html=True)
-
-        # Botones invisibles uno por tier para manejar el toggle
-        st.markdown("""<style>
+        /* Chip inactivo */
         section[data-testid="stSidebar"]
           div[data-testid="stHorizontalBlock"]
-          button {
-            height:22px!important; min-height:0!important;
-            padding:0!important; font-size:10px!important;
-            border-radius:4px!important;
+          button[data-testid="baseButton-secondary"] {
+            background: #e2e8f0 !important;
+            color: #4a5568 !important;
+            border: none !important;
+            border-radius: 999px !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            height: 36px !important;
+            min-height: 0 !important;
+            padding: 0 6px !important;
+            transition: background .15s, transform .1s !important;
+            box-shadow: none !important;
         }
+        /* Chip activo */
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button[data-testid="baseButton-primary"] {
+            background: #4299e1 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 999px !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            height: 36px !important;
+            min-height: 0 !important;
+            padding: 0 6px !important;
+            transition: background .15s, transform .1s !important;
+            box-shadow: 0 1px 4px rgba(66,153,225,.35) !important;
+        }
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button:hover { transform: scale(1.06) !important; }
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button:active { transform: scale(.97) !important; }
         </style>""", unsafe_allow_html=True)
 
         cols_t = st.columns(len(ALL_TIERS))
         for i, t in enumerate(ALL_TIERS):
             active = st.session_state["tiers_state"][t]
-            color  = tier_colors[t]
-            label  = f"✕ {t}" if active else f"+ {t}"
+            label  = f"{t} ✔" if active else t
             with cols_t[i]:
-                if st.button(label, key=f"tier_btn_{t}", use_container_width=True):
+                if st.button(label, key=f"tier_btn_{t}",
+                             type="primary" if active else "secondary",
+                             use_container_width=True):
                     st.session_state["tiers_state"][t] = not active
                     st.rerun()
 
