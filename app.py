@@ -105,12 +105,14 @@ def load_data():
     client = gspread.authorize(creds)
     sh = client.open_by_key(SHEET_ID)
 
-    # Try to find the main sheet (first sheet or one named 'trades'/'data')
     ws = sh.worksheets()
     sheet_names = [w.title for w in ws]
 
-    # Pick first worksheet
-    wsheet = ws[0]
+    # Use "BitPredict Live" if it exists, else first non-empty sheet
+    wsheet = next(
+        (w for w in ws if w.title == "BitPredict Live"),
+        next((w for w in ws if w.row_count > 1), ws[0])
+    )
     data = wsheet.get_all_records()
     df = pd.DataFrame(data)
     return df, sheet_names
@@ -133,16 +135,20 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["fecha"] = pd.NaT
 
-    # ── tier: last word/letter of "Volumen BTC (v Tier)" ─────────────────
-    vol_col = next((c for c in df.columns if "volumen" in c.lower() or "tier" in c.lower()), None)
-    if vol_col:
-        # e.g. "136.4 C" → "C",  "225.79 B" → "B"
-        df["tier"] = (df[vol_col].astype(str)
-                      .str.strip()
-                      .str.extract(r"([A-Za-z]+)\s*$")[0]
-                      .str.upper())
+    # ── tier: columna "Tier" separada (S, A, B, C, D) ───────────────────
+    tier_col = next((c for c in df.columns if c.strip().lower() == "tier"), None)
+    if tier_col:
+        df["tier"] = df[tier_col].astype(str).str.strip().str.upper()
     else:
-        df["tier"] = "?"
+        # fallback: extraer letra del campo Volumen BTC
+        vol_col = next((c for c in df.columns if "volumen" in c.lower()), None)
+        if vol_col:
+            df["tier"] = (df[vol_col].astype(str)
+                          .str.strip()
+                          .str.extract(r"([A-Za-z]+)\s*$")[0]
+                          .str.upper())
+        else:
+            df["tier"] = "?"
 
     # ── resultado: "Correcto" column (SI / NO) ────────────────────────────
     corr_col = next((c for c in df.columns if c.strip().lower() == "correcto"), None)
@@ -155,7 +161,7 @@ def prepare_df(df: pd.DataFrame) -> pd.DataFrame:
     df["pnl"] = df["resultado"].map({"SI": 1000, "NO": -1000}).fillna(0)
 
     # ── extra useful columns ──────────────────────────────────────────────
-    pred_col = next((c for c in df.columns if "prediccion" in c.lower() or "pric pred" in c.lower()), None)
+    pred_col = next((c for c in df.columns if "prediccion" in c.lower() or "prediction" in c.lower()), None)
     if pred_col:
         df["prediccion"] = df[pred_col].astype(str).str.strip().str.upper()
 
