@@ -137,9 +137,8 @@ st.markdown("""
     animation: calPulse .5s ease-out;
   }
 
-  /* ── Botones del calendario estilizados como cards (sólo área principal) ── */
-  section.main div[data-testid="stColumn"] div[data-testid="stButton"] button,
-  div[data-testid="block-container"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
+  /* ── Botones del calendario estilizados como cards ── */
+  div[data-testid="stColumn"] div[data-testid="stButton"] button {
     background-color: #161b22 !important;
     border: 1px solid #30363d !important;
     border-radius: 8px !important;
@@ -153,8 +152,7 @@ st.markdown("""
     transition: border-color .15s !important;
     color: #8b949e !important;
   }
-  section.main div[data-testid="stColumn"] div[data-testid="stButton"] button:hover,
-  div[data-testid="block-container"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
+  div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
     border-color: #58a6ff !important;
     background-color: #1c2128 !important;
   }
@@ -578,8 +576,8 @@ def main():
 
         # CSS toggle chips — azul activo / gris inactivo
         st.markdown("""<style>
-        /* ── Base compartido — cubre stHorizontalBlock (Streamlit ≤1.30) y stColumn (≥1.31) ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button,
+        /* ── Base compartido — alta especificidad para sobreescribir el CSS del calendario ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
             border-radius: 14px !important;
             font-size: 15px !important;
@@ -590,10 +588,8 @@ def main():
             transition: transform .12s, box-shadow .12s !important;
             padding: 0 10px !important;
         }
-        /* ── Chip INACTIVO — gris claro ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[kind="secondary"],
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[data-testid="baseButton-secondary"],
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[kind="secondary"],
+        /* ── Chip INACTIVO — gris ── */
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"],
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
             background: #9ca3af !important;
             color: #1f2937 !important;
@@ -601,9 +597,7 @@ def main():
             box-shadow: 0 2px 4px rgba(0,0,0,.20) !important;
         }
         /* ── Chip ACTIVO — azul degradado ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[kind="primary"],
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button[data-testid="baseButton-primary"],
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[kind="primary"],
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-primary"],
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
             background: linear-gradient(135deg, #60b4ff 0%, #2563eb 100%) !important;
             color: #ffffff !important;
@@ -611,18 +605,18 @@ def main():
             box-shadow: 0 3px 10px rgba(37,99,235,.55) !important;
         }
         /* ── Hover ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:hover,
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:hover,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
             transform: translateY(-2px) scale(1.05) !important;
             box-shadow: 0 6px 14px rgba(0,0,0,.25) !important;
         }
         /* ── Active press ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:active,
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:active,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:active {
             transform: translateY(0) scale(.95) !important;
         }
         /* ── Sin outline de focus ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] button:focus,
+        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:focus,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:focus {
             outline: none !important;
         }
