@@ -9,7 +9,7 @@ import os
 
 # ─── CONFIG ──────────────────────────────────────────────────────────────────
 SHEET_ID = "1LOnmIKg0IZtoftPYoNIIfWWl3oJTP-DH6AEZGWPZci4"
-CREDS_FILE = os.path.join(os.path.dirname(__file__), "master-plateau-489706-m4-685e52dee3cc.json")
+CREDS_FILE = os.path.join(os.path.dirname(__file__), "master-plateau-489706-m4-21b87b659f87.json")
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
 ALL_TIERS = ["S", "A", "B", "C", "D"]
@@ -93,7 +93,15 @@ st.markdown("""
 # ─── DATA LOADING ────────────────────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data():
-    creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
+    # Streamlit Cloud → lee de st.secrets
+    # Local → lee del archivo JSON
+    if "gcp_service_account" in st.secrets:
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]),
+            scopes=SCOPES
+        )
+    else:
+        creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPES)
     client = gspread.authorize(creds)
     sh = client.open_by_key(SHEET_ID)
 
@@ -442,7 +450,7 @@ def main():
         df = prepare_df(raw_df)
     except Exception as e:
         st.error(f"❌ Error cargando datos: {e}")
-        st.info("Asegúrate de compartir la hoja con: **messaging@master-plateau-489706-m4.iam.gserviceaccount.com**")
+        st.info("Asegúrate de compartir la hoja con: **predict@master-plateau-489706-m4.iam.gserviceaccount.com**")
         st.stop()
 
     if debug_mode:
