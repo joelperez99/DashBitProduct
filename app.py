@@ -87,6 +87,56 @@ st.markdown("""
     margin-bottom: 16px;
   }
 
+  /* ── Transiciones del panel de detalle ─────────────────────────────── */
+  @keyframes fadeSlideUp {
+    0%   { opacity: 0; transform: translateY(22px) scale(0.98); filter: blur(3px); }
+    60%  { opacity: .85; filter: blur(.5px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  @keyframes wipeLine {
+    0%   { transform: scaleX(0); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes calPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(88,166,255,0.55); }
+    60%  { box-shadow: 0 0 0 10px rgba(88,166,255,0); }
+    100% { box-shadow: 0 0 0 0  rgba(88,166,255,0); }
+  }
+
+  /* Panel completo entra con fadeSlideUp */
+  .detail-enter {
+    animation: fadeSlideUp .45s cubic-bezier(0.16,1,0.3,1) both;
+  }
+  /* Línea wipe en la parte superior */
+  .detail-wipe-line {
+    height: 3px;
+    border-radius: 2px;
+    transform-origin: left center;
+    animation: wipeLine .4s cubic-bezier(0.16,1,0.3,1) both;
+    margin-bottom: 14px;
+  }
+  /* Cada card entra escalonado */
+  .det-card { animation: fadeSlideUp .4s cubic-bezier(0.16,1,0.3,1) both; }
+  .det-card:nth-child(1) { animation-delay: .04s; }
+  .det-card:nth-child(2) { animation-delay: .09s; }
+  .det-card:nth-child(3) { animation-delay: .14s; }
+  .det-card:nth-child(4) { animation-delay: .19s; }
+  .det-card:nth-child(5) { animation-delay: .24s; }
+  .det-card:nth-child(6) { animation-delay: .29s; }
+  .det-card:nth-child(7) { animation-delay: .34s; }
+  .det-card:nth-child(8) { animation-delay: .39s; }
+  .det-card:nth-child(9) { animation-delay: .44s; }
+
+  /* Día seleccionado pulsa en el calendario */
+  div:has(>span[id^="cal-"]) ~ div button:not(:disabled):focus,
+  div:has(>span[id^="cal-"]) ~ div button:not(:disabled):active {
+    animation: calPulse .5s ease-out;
+  }
+
   /* ── Botones del calendario estilizados como cards ── */
   div[data-testid="stColumn"] div[data-testid="stButton"] button {
     background-color: #161b22 !important;
@@ -262,66 +312,65 @@ def show_day_detail(df: pd.DataFrame, selected_day: date, tiers: list):
     seq = fdf["resultado"].tolist() if "resultado" in fdf.columns else []
 
     # ── Layout ────────────────────────────────────────────────────────────
-    st.markdown(f"### Detalle — día {selected_day.day:02d}")
+    # Color de acento según resultado del día
+    accent = "#3fb950" if net >= 0 else "#f85149"
+
+    # Contenedor principal con animación de entrada + línea wipe
+    st.markdown(f"""
+    <div class="detail-enter">
+      <div class="detail-wipe-line" style="background:{accent}"></div>
+      <div style="font-size:15px;font-weight:700;color:#e6edf3;margin-bottom:12px;letter-spacing:.5px">
+        Detalle — día {selected_day.day:02d}
+        <span style="font-size:12px;color:{accent};margin-left:8px">
+          {'▲ Ganancia' if net >= 0 else '▼ Pérdida'}
+        </span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    def det_card(label, value_html, delay_s=0):
+        return (f"<div class='det-card' style='animation-delay:{delay_s:.2f}s'>"
+                f"<div class='det-label'>{label}</div>"
+                f"<div class='det-value'>{value_html}</div></div>")
+
+    color_net = "det-green" if net >= 0 else "det-red"
+    sign_net  = "+" if net >= 0 else ""
+    color_fin = "det-green" if banco_final >= banco_inicial else "det-red"
+    diff      = banco_final - banco_inicial
+    sign_diff = "+" if diff >= 0 else ""
 
     c1, c2, c3, c4 = st.columns(4)
     with c1:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Total resultados</div>
-          <div class='det-value'>{total}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Total resultados", str(total), .04), unsafe_allow_html=True)
     with c2:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>SI (gana)</div>
-          <div class='det-value det-green'>{wins}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("SI (gana)", f"<span class='det-green'>{wins}</span>", .09), unsafe_allow_html=True)
     with c3:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>NO (pierde)</div>
-          <div class='det-value det-red'>{losses}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("NO (pierde)", f"<span class='det-red'>{losses}</span>", .14), unsafe_allow_html=True)
     with c4:
-        color_cls = "det-green" if net >= 0 else "det-red"
-        sign = "+" if net >= 0 else ""
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Balance neto</div>
-          <div class='det-value {color_cls}'>{sign}${net:,.0f}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Balance neto", f"<span class='{color_net}'>{sign_net}${net:,.0f}</span>", .19), unsafe_allow_html=True)
 
     c5, c6, c7 = st.columns(3)
     with c5:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Banco inicial</div>
-          <div class='det-value'>${banco_inicial:,.0f}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Banco inicial", f"${banco_inicial:,.0f}", .24), unsafe_allow_html=True)
     with c6:
-        color_cls = "det-green" if banco_final >= banco_inicial else "det-red"
-        diff = banco_final - banco_inicial
-        sign = "+" if diff >= 0 else ""
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Banco final</div>
-          <div class='det-value {color_cls}'>${banco_final:,.0f}<br>
-          <small style='font-size:13px'>{sign}${diff:,.0f}</small></div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Banco final",
+            f"<span class='{color_fin}'>${banco_final:,.0f}</span>"
+            f"<small style='display:block;font-size:12px;margin-top:2px'>{sign_diff}${diff:,.0f}</small>", .29),
+            unsafe_allow_html=True)
     with c7:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Win rate</div>
-          <div class='det-value'>{win_rate:.1f}%</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Win rate", f"{win_rate:.1f}%", .34), unsafe_allow_html=True)
 
     c8, c9 = st.columns(2)
     with c8:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Banco mínimo del día</div>
-          <div class='det-value det-red'>${banco_min:,.0f}</div>
-          <div style='font-size:12px;color:#888'>Resultado #{idx_min}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Banco mínimo del día",
+            f"<span class='det-red'>${banco_min:,.0f}</span>"
+            f"<small style='display:block;font-size:11px;color:#888;margin-top:2px'>Resultado #{idx_min}</small>", .39),
+            unsafe_allow_html=True)
     with c9:
-        st.markdown(f"""<div class='det-card'>
-          <div class='det-label'>Banco máximo del día</div>
-          <div class='det-value det-green'>${banco_max:,.0f}</div>
-          <div style='font-size:12px;color:#888'>Resultado #{idx_max}</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(det_card("Banco máximo del día",
+            f"<span class='det-green'>${banco_max:,.0f}</span>"
+            f"<small style='display:block;font-size:11px;color:#888;margin-top:2px'>Resultado #{idx_max}</small>", .44),
+            unsafe_allow_html=True)
 
     # ── Bank curve chart ──────────────────────────────────────────────────
     # Color: verde si ganó el día, rojo si perdió
@@ -379,15 +428,20 @@ def show_day_detail(df: pd.DataFrame, selected_day: date, tiers: list):
         ),
         hovermode="x unified",
     )
+    st.markdown("<div style='animation:fadeSlideUp .5s cubic-bezier(0.16,1,0.3,1) .5s both'>",
+                unsafe_allow_html=True)
     st.plotly_chart(fig, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     # ── Sequence pills ────────────────────────────────────────────────────
+    st.markdown("<div style='animation:fadeSlideUp .4s cubic-bezier(0.16,1,0.3,1) .62s both'>",
+                unsafe_allow_html=True)
     st.markdown("**Secuencia de resultados**")
     pills_html = " ".join(
         f"<span class='seq-pill {'pill-si' if r == 'SI' else 'pill-no'}'>{r}</span>"
         for r in seq
     )
-    st.markdown(f"<div style='margin-top:8px'>{pills_html}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='margin-top:8px'>{pills_html}</div></div>", unsafe_allow_html=True)
 
     # ── Trade table ───────────────────────────────────────────────────────
     st.markdown("---")
