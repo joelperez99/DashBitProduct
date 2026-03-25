@@ -667,6 +667,16 @@ def main():
         st.info("Asegúrate de compartir la hoja con: **predict@master-plateau-489706-m4.iam.gserviceaccount.com**")
         st.stop()
 
+    # ── Último dato en sidebar ─────────────────────────────────────────────
+    last_ts = df["fecha"].dropna().max() if "fecha" in df.columns else None
+    if last_ts is not pd.NaT and last_ts is not None:
+        last_str = pd.Timestamp(last_ts).strftime("%d/%m/%Y %H:%M")
+        st.sidebar.markdown(
+            f"<div style='font-size:12px; color:#6b7280; margin-top:-8px;'>"
+            f"🕐 Último dato: <b style='color:#374151;'>{last_str}</b></div>",
+            unsafe_allow_html=True
+        )
+
     if debug_mode:
         st.subheader("🔍 Columnas raw del Sheet")
         st.write("Hojas:", sheet_names)
