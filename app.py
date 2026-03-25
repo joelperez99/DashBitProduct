@@ -576,50 +576,43 @@ def main():
 
         # CSS toggle chips — azul activo / gris inactivo
         st.markdown("""<style>
-        /* ── Base compartido — alta especificidad para sobreescribir el CSS del calendario ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button,
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
+        /* ── Base — todos los botones del sidebar ── */
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button {
             border-radius: 20px !important;
             font-size: 14px !important;
             font-weight: 700 !important;
             height: 40px !important;
             min-height: 0 !important;
-            min-width: 0 !important;
             letter-spacing: .3px !important;
             transition: filter .12s, transform .1s !important;
             padding: 0 14px !important;
             white-space: nowrap !important;
         }
         /* ── Chip INACTIVO — gris claro ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"],
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
             background: #c8cdd6 !important;
             color: #3a3f4a !important;
             border: none !important;
             box-shadow: none !important;
         }
-        /* ── Chip ACTIVO — azul sólido con sombra suave ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-primary"],
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
+        /* ── Chip ACTIVO — azul suave ── */
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
             background: #5b9bd5 !important;
             color: #ffffff !important;
             border: none !important;
             box-shadow: 0 2px 6px rgba(91,155,213,.45) !important;
         }
         /* ── Hover ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:hover,
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button:hover {
             filter: brightness(1.08) !important;
             transform: scale(1.04) !important;
         }
         /* ── Active press ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:active,
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:active {
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button:active {
             transform: scale(.95) !important;
         }
         /* ── Sin outline de focus ── */
-        section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:focus,
-        section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:focus {
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button:focus {
             outline: none !important;
         }
         </style>""", unsafe_allow_html=True)
