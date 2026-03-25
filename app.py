@@ -86,6 +86,35 @@ st.markdown("""
     color: #e6edf3;
     margin-bottom: 16px;
   }
+
+  /* ── Botones del calendario estilizados como cards ── */
+  div[data-testid="stColumn"] div[data-testid="stButton"] button {
+    background-color: #161b22 !important;
+    border: 1px solid #30363d !important;
+    border-radius: 8px !important;
+    min-height: 85px !important;
+    width: 100% !important;
+    padding: 8px 6px !important;
+    white-space: pre-wrap !important;
+    text-align: center !important;
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+    transition: border-color .15s !important;
+    color: #8b949e !important;
+  }
+  div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
+    border-color: #58a6ff !important;
+    background-color: #1c2128 !important;
+  }
+  /* Celdas vacías */
+  .cal-empty { min-height: 85px; }
+  /* Clases de color para PnL — inyectadas por Python */
+  .cal-pos button { color: #3fb950 !important; }
+  .cal-neg button { color: #f85149 !important; }
+  .cal-zero button { color: #8b949e !important; }
+  .cal-best button { border: 2px solid #3fb950 !important; }
+  .cal-worst button { border: 2px solid #f85149 !important; }
+  .cal-selected button { border: 2px solid #58a6ff !important; background-color: #1c2128 !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -341,77 +370,89 @@ def show_day_detail(df: pd.DataFrame, selected_day: date, tiers: list):
 
 
 # ─── CALENDAR ────────────────────────────────────────────────────────────────
+def set_selected_day(day: int):
+    st.session_state["selected_day"] = day
+
+
 def render_calendar(agg: pd.DataFrame, year: int, month: int):
-    """Render the clickable calendar grid; returns the clicked day (int) or None."""
+    """Render the clickable calendar grid using styled st.button as cards."""
     day_map = {}
     if not agg.empty:
         for _, row in agg.iterrows():
             if row["day"].year == year and row["day"].month == month:
                 day_map[row["day"].day] = row
 
-    best_day  = max(day_map, key=lambda d: day_map[d]["pnl"], default=None)
-    worst_day = min(day_map, key=lambda d: day_map[d]["pnl"], default=None)
+    best_day  = max(day_map, key=lambda d: day_map[d]["pnl"], default=None) if day_map else None
+    worst_day = min(day_map, key=lambda d: day_map[d]["pnl"], default=None) if day_map else None
+    selected  = st.session_state.get("selected_day")
 
-    # Build matrix (weeks × 7)
-    cal = calendar.monthcalendar(year, month)
-    WEEKDAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
-
-    clicked = None
+    cal_matrix = calendar.monthcalendar(year, month)
+    WEEKDAYS   = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
     # Header row
-    cols = st.columns(7)
+    header_cols = st.columns(7)
     for i, wd in enumerate(WEEKDAYS):
-        cols[i].markdown(f"<div style='text-align:center;color:#8b949e;font-size:12px;padding-bottom:4px'>{wd}</div>",
-                         unsafe_allow_html=True)
+        header_cols[i].markdown(
+            f"<div style='text-align:center;color:#8b949e;font-size:12px;"
+            f"padding-bottom:4px'>{wd}</div>",
+            unsafe_allow_html=True,
+        )
 
-    for week in cal:
+    for week in cal_matrix:
         cols = st.columns(7)
         for i, day in enumerate(week):
-            if day == 0:
-                cols[i].markdown("<div style='min-height:80px'></div>", unsafe_allow_html=True)
-                continue
-
-            row = day_map.get(day)
-            pnl = row["pnl"] if row is not None else None
-            trades = int(row["trades"]) if row is not None else 0
-            wins   = int(row["wins"])   if row is not None else 0
-            losses = int(row["losses"]) if row is not None else 0
-
-            if pnl is None:
-                pnl_cls = "pnl-zero"
-                pnl_str = "$+0"
-            elif pnl > 0:
-                pnl_cls = "pnl-pos"
-                pnl_str = f"$+{pnl:,.0f}"
-            elif pnl < 0:
-                pnl_cls = "pnl-neg"
-                pnl_str = f"$-{abs(pnl):,.0f}"
-            else:
-                pnl_cls = "pnl-zero"
-                pnl_str = "$+0"
-
-            border_extra = ""
-            if day == best_day:  border_extra = "best"
-            if day == worst_day: border_extra = "worst"
-
-            meta = f"{wins}W/{losses}L · {trades}tr" if trades else ""
-
-            card_html = f"""
-            <div class='day-card {border_extra}'>
-              <div class='day-num'>{day:02d}</div>
-              <div class='day-pnl {pnl_cls}'>{pnl_str}</div>
-              <div class='day-meta'>{meta}</div>
-            </div>"""
-
             with cols[i]:
-                st.markdown(card_html, unsafe_allow_html=True)
-                if trades > 0:
-                    if st.button("", key=f"day_{year}_{month}_{day}",
-                                 help=f"Ver detalle día {day}",
-                                 use_container_width=True):
-                        clicked = day
+                if day == 0:
+                    st.markdown("<div class='cal-empty'></div>", unsafe_allow_html=True)
+                    continue
 
-    return clicked
+                row    = day_map.get(day)
+                pnl    = float(row["pnl"])    if row is not None else 0.0
+                trades = int(row["trades"])   if row is not None else 0
+                wins   = int(row["wins"])     if row is not None else 0
+                losses = int(row["losses"])   if row is not None else 0
+
+                # Build label (plain text — Streamlit button)
+                if trades > 0:
+                    if pnl > 0:
+                        pnl_str = f"$+{pnl:,.0f}"
+                    elif pnl < 0:
+                        pnl_str = f"-${abs(pnl):,.0f}"
+                    else:
+                        pnl_str = "$+0"
+                    meta    = f"{wins}W/{losses}L · {trades}tr"
+                    label   = f"{day:02d}\n{pnl_str}\n{meta}"
+                else:
+                    label   = f"{day:02d}\n$+0\n "
+
+                # CSS class determines color
+                if day == selected:
+                    css_cls = "cal-selected"
+                elif day == best_day:
+                    css_cls = "cal-best"
+                elif day == worst_day:
+                    css_cls = "cal-worst"
+                elif pnl > 0:
+                    css_cls = "cal-pos"
+                elif pnl < 0:
+                    css_cls = "cal-neg"
+                else:
+                    css_cls = "cal-zero"
+
+                # Inject CSS class wrapper BEFORE the button
+                st.markdown(
+                    f"<div class='{css_cls}'>",
+                    unsafe_allow_html=True,
+                )
+                st.button(
+                    label,
+                    key=f"day_{year}_{month}_{day}",
+                    on_click=set_selected_day,
+                    args=(day,),
+                    use_container_width=True,
+                    disabled=(trades == 0),
+                )
+                st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ─── MAIN APP ────────────────────────────────────────────────────────────────
@@ -523,21 +564,22 @@ def main():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Calendar + Detail layout ──────────────────────────────────────────
+    if "selected_day" not in st.session_state:
+        st.session_state["selected_day"] = None
+
     cal_col, det_col = st.columns([3, 2], gap="large")
 
     with cal_col:
-        if "selected_day" not in st.session_state:
-            st.session_state["selected_day"] = None
-
-        clicked = render_calendar(month_agg, sel_year, sel_month)
-        if clicked is not None:
-            st.session_state["selected_day"] = clicked
+        render_calendar(month_agg, sel_year, sel_month)
 
     with det_col:
         sel = st.session_state.get("selected_day")
         if sel:
             sel_date = date(sel_year, sel_month, sel)
-            show_day_detail(df, sel_date, tiers_sel)
+            try:
+                show_day_detail(df, sel_date, tiers_sel)
+            except Exception as e:
+                st.error(f"Error al mostrar detalle: {e}")
         else:
             st.markdown("""
             <div style='color:#8b949e; margin-top: 60px; text-align:center'>
