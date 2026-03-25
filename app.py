@@ -576,7 +576,7 @@ def main():
 
         # CSS toggle chips — azul activo / gris inactivo
         st.markdown("""<style>
-        /* ── Base + INACTIVO: gris — esta regla SÍ hace match (border-radius funciona) ── */
+        /* ── Base: forma de todos los botones del sidebar ── */
         section[data-testid="stSidebar"] div[data-testid="stButton"] button {
             border-radius: 20px !important;
             font-size: 14px !important;
@@ -587,6 +587,11 @@ def main():
             transition: filter .12s, transform .1s !important;
             padding: 0 14px !important;
             white-space: nowrap !important;
+        }
+        /* ── Chip INACTIVO — gris (especificidad alta con kind="secondary") ── */
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="secondary"],
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"],
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="stBaseButton-secondary"] {
             background: #c8cdd6 !important;
             background-color: #c8cdd6 !important;
             color: #3a3f4a !important;
