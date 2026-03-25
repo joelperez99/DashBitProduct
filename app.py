@@ -425,7 +425,41 @@ def render_calendar(agg: pd.DataFrame, year: int, month: int):
     cal_matrix = calendar.monthcalendar(year, month)
     WEEKDAYS   = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
 
-    # Header row
+    # ── Pre-generate per-day CSS using :has() ────────────────────────────
+    # Each button gets a hidden <span id="cal-KEY"> as a preceding sibling.
+    # :has() lets us target the column that contains that span.
+    css_rules = []
+    for day, row in day_map.items():
+        key = f"day_{year}_{month}_{day}"
+        pnl = float(row["pnl"])
+        if day == selected:
+            color  = "#58a6ff"
+            border = "2px solid #58a6ff"
+        elif day == best_day:
+            color  = "#3fb950"
+            border = "2px solid #3fb950"
+        elif day == worst_day:
+            color  = "#f85149"
+            border = "2px solid #f85149"
+        elif pnl > 0:
+            color  = "#3fb950"
+            border = "1px solid #30363d"
+        elif pnl < 0:
+            color  = "#f85149"
+            border = "1px solid #30363d"
+        else:
+            color  = "#8b949e"
+            border = "1px solid #30363d"
+
+        css_rules.append(
+            f"div[data-testid='stColumn']:has(#cal-{key}) button{{"
+            f"color:{color}!important;border:{border}!important;}}"
+        )
+
+    if css_rules:
+        st.markdown(f"<style>{''.join(css_rules)}</style>", unsafe_allow_html=True)
+
+    # ── Header row ───────────────────────────────────────────────────────
     header_cols = st.columns(7)
     for i, wd in enumerate(WEEKDAYS):
         header_cols[i].markdown(
@@ -434,6 +468,7 @@ def render_calendar(agg: pd.DataFrame, year: int, month: int):
             unsafe_allow_html=True,
         )
 
+    # ── Calendar rows ────────────────────────────────────────────────────
     for week in cal_matrix:
         cols = st.columns(7)
         for i, day in enumerate(week):
@@ -443,52 +478,30 @@ def render_calendar(agg: pd.DataFrame, year: int, month: int):
                     continue
 
                 row    = day_map.get(day)
-                pnl    = float(row["pnl"])    if row is not None else 0.0
-                trades = int(row["trades"])   if row is not None else 0
-                wins   = int(row["wins"])     if row is not None else 0
-                losses = int(row["losses"])   if row is not None else 0
+                pnl    = float(row["pnl"])  if row is not None else 0.0
+                trades = int(row["trades"]) if row is not None else 0
+                wins   = int(row["wins"])   if row is not None else 0
+                losses = int(row["losses"]) if row is not None else 0
 
-                # Build label (plain text — Streamlit button)
                 if trades > 0:
-                    if pnl > 0:
-                        pnl_str = f"$+{pnl:,.0f}"
-                    elif pnl < 0:
-                        pnl_str = f"-${abs(pnl):,.0f}"
-                    else:
-                        pnl_str = "$+0"
-                    meta    = f"{wins}W/{losses}L · {trades}tr"
-                    label   = f"{day:02d}\n{pnl_str}\n{meta}"
+                    pnl_str = (f"$+{pnl:,.0f}" if pnl > 0
+                               else f"-${abs(pnl):,.0f}" if pnl < 0
+                               else "$+0")
+                    label = f"{day:02d}\n{pnl_str}\n{wins}W/{losses}L · {trades}tr"
                 else:
-                    label   = f"{day:02d}\n$+0\n "
+                    label = f"{day:02d}\n$+0\n "
 
-                # CSS class determines color
-                if day == selected:
-                    css_cls = "cal-selected"
-                elif day == best_day:
-                    css_cls = "cal-best"
-                elif day == worst_day:
-                    css_cls = "cal-worst"
-                elif pnl > 0:
-                    css_cls = "cal-pos"
-                elif pnl < 0:
-                    css_cls = "cal-neg"
-                else:
-                    css_cls = "cal-zero"
-
-                # Inject CSS class wrapper BEFORE the button
-                st.markdown(
-                    f"<div class='{css_cls}'>",
-                    unsafe_allow_html=True,
-                )
+                key = f"day_{year}_{month}_{day}"
+                # Hidden marker so :has(#cal-KEY) CSS selector can find this column
+                st.markdown(f'<span id="cal-{key}"></span>', unsafe_allow_html=True)
                 st.button(
                     label,
-                    key=f"day_{year}_{month}_{day}",
+                    key=key,
                     on_click=set_selected_day,
                     args=(day,),
                     use_container_width=True,
                     disabled=(trades == 0),
                 )
-                st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ─── MAIN APP ────────────────────────────────────────────────────────────────
