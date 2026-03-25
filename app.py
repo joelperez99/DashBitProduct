@@ -576,7 +576,7 @@ def main():
 
         # CSS toggle chips — azul activo / gris inactivo
         st.markdown("""<style>
-        /* ── Base — todos los botones del sidebar ── */
+        /* ── Base + INACTIVO: gris — esta regla SÍ hace match (border-radius funciona) ── */
         section[data-testid="stSidebar"] div[data-testid="stButton"] button {
             border-radius: 20px !important;
             font-size: 14px !important;
@@ -587,24 +587,25 @@ def main():
             transition: filter .12s, transform .1s !important;
             padding: 0 14px !important;
             white-space: nowrap !important;
-        }
-        /* ── Chip INACTIVO — gris claro ── */
-        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
             background: #c8cdd6 !important;
+            background-color: #c8cdd6 !important;
             color: #3a3f4a !important;
             border: none !important;
             box-shadow: none !important;
         }
-        /* ── Chip ACTIVO — azul suave ── */
-        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
+        /* ── Chip ACTIVO — azul suave (múltiples selectores para cubrir todas las versiones) ── */
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[kind="primary"],
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="baseButton-primary"],
+        section[data-testid="stSidebar"] div[data-testid="stButton"] button[data-testid="stBaseButton-primary"] {
             background: #5b9bd5 !important;
+            background-color: #5b9bd5 !important;
             color: #ffffff !important;
             border: none !important;
             box-shadow: 0 2px 6px rgba(91,155,213,.45) !important;
         }
         /* ── Hover ── */
         section[data-testid="stSidebar"] div[data-testid="stButton"] button:hover {
-            filter: brightness(1.08) !important;
+            filter: brightness(1.10) !important;
             transform: scale(1.04) !important;
         }
         /* ── Active press ── */
