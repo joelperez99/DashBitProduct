@@ -571,43 +571,59 @@ def main():
         # ── Tier pills ────────────────────────────────────────────────────
         st.markdown("**Tiers activos**")
 
-        # Inicializar estado si no existe
+        # Inicializar estado
         if "tiers_state" not in st.session_state:
             st.session_state["tiers_state"] = {t: (t in ["S", "A", "B"]) for t in ALL_TIERS}
 
-        # CSS para los pill-buttons de tiers
-        tier_colors = {"S": "#e3b341", "A": "#58a6ff", "B": "#3fb950",
-                       "C": "#bc8cff", "D": "#f85149"}
-        tier_css = ""
-        for t, color in tier_colors.items():
-            tier_css += f"""
-            div:has(>span#tier-pill-{t})~div button{{
-                background:{color}!important;color:#0d1117!important;
-                border:2px solid {color}!important;font-weight:700!important;
-                border-radius:20px!important;padding:4px 14px!important;
-                min-height:0!important;height:32px!important;font-size:13px!important;
-            }}
-            div:has(>span#tier-pill-off-{t})~div button{{
-                background:transparent!important;color:{color}!important;
-                border:2px solid {color}44!important;font-weight:600!important;
-                border-radius:20px!important;padding:4px 14px!important;
-                min-height:0!important;height:32px!important;font-size:13px!important;
-            }}
-            div:has(>span#tier-pill-{t})~div button:hover,
-            div:has(>span#tier-pill-off-{t})~div button:hover{{
-                opacity:.85!important;
-            }}
-            """
-        st.markdown(f"<style>{tier_css}</style>", unsafe_allow_html=True)
+        # CSS confiable: apunta a botones primary/secondary dentro
+        # de st.columns() en la sidebar (stHorizontalBlock)
+        st.markdown("""
+        <style>
+        /* Pill activo (type=primary) en la sidebar */
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button[data-testid="baseButton-primary"] {
+            border-radius: 20px !important;
+            font-weight: 700 !important;
+            height: 34px !important;
+            min-height: 0 !important;
+            font-size: 13px !important;
+            background: #58a6ff !important;
+            color: #0d1117 !important;
+            border: none !important;
+            transition: opacity .15s, transform .1s !important;
+        }
+        /* Pill inactivo (type=secondary) en la sidebar */
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button[data-testid="baseButton-secondary"] {
+            border-radius: 20px !important;
+            font-weight: 600 !important;
+            height: 34px !important;
+            min-height: 0 !important;
+            font-size: 13px !important;
+            background: #21262d !important;
+            color: #8b949e !important;
+            border: 1px solid #30363d !important;
+            transition: opacity .15s, transform .1s !important;
+        }
+        section[data-testid="stSidebar"]
+          div[data-testid="stHorizontalBlock"]
+          button:hover {
+            opacity: .8 !important;
+            transform: scale(1.04) !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
         # Render pill buttons en fila
         cols_t = st.columns(len(ALL_TIERS))
         for i, t in enumerate(ALL_TIERS):
             active = st.session_state["tiers_state"][t]
-            pill_id = f"tier-pill-{t}" if active else f"tier-pill-off-{t}"
             with cols_t[i]:
-                st.markdown(f'<span id="{pill_id}"></span>', unsafe_allow_html=True)
-                if st.button(t, key=f"tier_btn_{t}", use_container_width=True):
+                if st.button(t, key=f"tier_btn_{t}",
+                             type="primary" if active else "secondary",
+                             use_container_width=True):
                     st.session_state["tiers_state"][t] = not active
                     st.rerun()
 
