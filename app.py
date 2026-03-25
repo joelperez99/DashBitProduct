@@ -579,41 +579,43 @@ def main():
         /* ── Base compartido — alta especificidad para sobreescribir el CSS del calendario ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button {
-            border-radius: 14px !important;
-            font-size: 15px !important;
-            font-weight: 800 !important;
-            height: 52px !important;
+            border-radius: 20px !important;
+            font-size: 14px !important;
+            font-weight: 700 !important;
+            height: 40px !important;
             min-height: 0 !important;
-            letter-spacing: .5px !important;
-            transition: transform .12s, box-shadow .12s !important;
-            padding: 0 10px !important;
+            min-width: 0 !important;
+            letter-spacing: .3px !important;
+            transition: filter .12s, transform .1s !important;
+            padding: 0 14px !important;
+            white-space: nowrap !important;
         }
-        /* ── Chip INACTIVO — gris ── */
+        /* ── Chip INACTIVO — gris claro ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"],
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-secondary"] {
-            background: #9ca3af !important;
-            color: #1f2937 !important;
+            background: #c8cdd6 !important;
+            color: #3a3f4a !important;
             border: none !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,.20) !important;
+            box-shadow: none !important;
         }
-        /* ── Chip ACTIVO — azul degradado ── */
+        /* ── Chip ACTIVO — azul sólido con sombra suave ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button[data-testid="baseButton-primary"],
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button[data-testid="baseButton-primary"] {
-            background: linear-gradient(135deg, #60b4ff 0%, #2563eb 100%) !important;
+            background: #5b9bd5 !important;
             color: #ffffff !important;
             border: none !important;
-            box-shadow: 0 3px 10px rgba(37,99,235,.55) !important;
+            box-shadow: 0 2px 6px rgba(91,155,213,.45) !important;
         }
         /* ── Hover ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:hover,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:hover {
-            transform: translateY(-2px) scale(1.05) !important;
-            box-shadow: 0 6px 14px rgba(0,0,0,.25) !important;
+            filter: brightness(1.08) !important;
+            transform: scale(1.04) !important;
         }
         /* ── Active press ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:active,
         section[data-testid="stSidebar"] div[data-testid="stColumn"] div[data-testid="stButton"] button:active {
-            transform: translateY(0) scale(.95) !important;
+            transform: scale(.95) !important;
         }
         /* ── Sin outline de focus ── */
         section[data-testid="stSidebar"] div[data-testid="stHorizontalBlock"] div[data-testid="stButton"] button:focus,
@@ -626,7 +628,7 @@ def main():
         for i, t in enumerate(ALL_TIERS):
             active = st.session_state["tiers_state"][t]
             # Checkmark circular para activos (igual que la imagen)
-            label  = f"{t}  ✅" if active else t
+            label  = f"{t} ✓" if active else t
             with cols_t[i]:
                 if st.button(label, key=f"tier_btn_{t}",
                              type="primary" if active else "secondary",
